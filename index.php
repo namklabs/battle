@@ -37,6 +37,28 @@ Deck.prototype.getCard = function( name ){
 	}
 }
 
+function Game ( starting_hp ) {
+	this.player1 = new Player( starting_hp, 1 );
+	this.player2 = new Player( starting_hp, 2 );
+	this.turnorder = []; // we have a turn order array in case a player earns multiple turns in a row. 
+	if( Math.random() < 0.5 ){
+		this.turnorder.push( this.player1, this.player2 );
+	} else {
+		this.turnorder.push( this.player2, this.player1 );
+	}
+}
+Game.prototype.turn = function(){
+	//start the next turn
+	this.focus = this.turnorder.shift(); // removes first player in turn order and returns it AND adds that player to the back of the turn order.
+}
+
+function Player( starting_hp, id ) {
+	this.hp = typeof(starting_hp)==='undefined' ? 30 : starting_hp;
+	this.id = id;
+	this.name = "Player " + this.id; //prompt("Please enter Player " + this.id + "'s name:"); //TODO: uncomment this for production so users can name their players
+}
+
+
 var cardlist = 
 [{
 	title: "High Double Kick Trick",
@@ -134,8 +156,23 @@ var cardlist =
 		middle: -5,
 		low: -1
 	}
+},{
+	title: "Runaround",
+	attacks: [{
+		area: 'low',
+		strength: 'light',
+		type: 'reverse',
+		damage: 6
+	}],
+	defenses: {
+		high: 'miss',
+		middle: 'block',
+		low: 'block'
+	}
 }]; // end cardlist
 
+g = new Game();
+console.log(g);
 
 // createCard = function(){
 // 	// definitions
