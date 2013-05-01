@@ -16,6 +16,72 @@ session_start();
 
 $b = $("body");
 
+/*
+TODO:
+
+2 Players can play on 1 keyboard. Set up like classic fighter style control pad. 6 keys on the left of the board and 6 keys on the right of the board for both player's controls. Each key corresponds to a card in their hand.
+
+Player 1 Keys:
+Card 1 - Q
+Card 2 - W
+Card 3 - E
+Card 4 - A
+Card 5 - S
+Card 6 - D
+
+Player 2 Keys:
+Card 1 - I
+Card 2 - O
+Card 3 - P
+Card 4 - J
+Card 5 - K
+Card 6 - L
+
+Both players have a set amount of time to select their card with their keys. They can change their selection until the timer ends. The time is very short, like 8 seconds. This makes the players have to think fast and react quickly to new card options.
+
+
+
+
+
+
+TODO: IDEA
+
+When a player plays a card, the card may put their character into a certain position such as crouching or standing or jumping. Perhaps these stances last 1 turn each and may inhibit the types of cards you can play immediately after the card you just played. Riffing off previous card choices will make this game much more exciting.
+
+*/
+
+sf = {}; // "Stick Fight!"
+
+//CLASS DEFINITIONS
+//////////////////////////////
+
+function Interface () {
+	
+}
+Interface.prototype.render_card = function( obj_card ){
+	var c = obj_card;
+	var cardhtml = '<div class="card"><h3>' + c.title + '</h3>' + c.attacks[0].area + " " + c.attacks[0].strength + " " + c.attacks[0].type + " " + c.attacks[0].damage + " " + '</div>';
+	return cardhtml;
+}
+
+//////////////////////////////
+
+function Game ( starting_hp, deck_size ) {
+	this.ux = new Interface();
+	this.deck = new Deck( deck_size );
+	this.player1 = new Player( this, starting_hp, 1 );
+	this.player2 = new Player( this, starting_hp, 2 );
+	this.roundnumber = 0;
+}
+Game.prototype.round = function(){
+	//start the next round of combat
+}
+Game.prototype.drawCard = function(){
+	return this.deck.cards.shift() ; // TODO: should probably make a function to handle this so when the deck runs out the game will get something other than undefined.
+}
+
+//////////////////////////////
+
 function Deck ( int_cards ) {
 	int_cards = typeof(int_cards)==='undefined' ? 60 : int_cards;
 	this.cards = [];
@@ -37,27 +103,33 @@ Deck.prototype.getCard = function( name ){
 	}
 }
 
-function Game ( starting_hp ) {
-	this.player1 = new Player( starting_hp, 1 );
-	this.player2 = new Player( starting_hp, 2 );
-	this.turnorder = []; // we have a turn order array in case a player earns multiple turns in a row. 
-	if( Math.random() < 0.5 ){
-		this.turnorder.push( this.player1, this.player2 );
-	} else {
-		this.turnorder.push( this.player2, this.player1 );
-	}
-}
-Game.prototype.turn = function(){
-	//start the next turn
-	this.focus = this.turnorder.shift(); // removes first player in turn order and returns it AND adds that player to the back of the turn order.
-}
+//////////////////////////////
 
-function Player( starting_hp, id ) {
+function Player( gameref, starting_hp, id ) {
 	this.hp = typeof(starting_hp)==='undefined' ? 30 : starting_hp;
 	this.id = id;
 	this.name = "Player " + this.id; //prompt("Please enter Player " + this.id + "'s name:"); //TODO: uncomment this for production so users can name their players
+	this.hand = [];
+	this.parent = gameref;
+
+	for(var i = 0; i < 6; i++ ){
+		this.hand.push( gameref.drawCard() );
+	}
+	this.print( true );
+}
+Player.prototype.print = function( bool_init ){
+	if( bool_init ) $("body").append('<div id="player' + this.id + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
+	var handhtml = '';
+	for( i in this.hand ){
+		handhtml += this.parent.ux.render_card( this.hand[i] ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because sf.game isn't ready until everything runs once, so inside of the constructors sf.game returns undefined.
+	}
+	$("#player" + this.id )
+		.find('.name').text( this.name ).end()
+		.find('.hp').text( "HP: " + this.hp ).end()
+		.find('.hand').html( handhtml );
 }
 
+//////////////////////////////
 
 var cardlist = 
 [{
@@ -171,8 +243,9 @@ var cardlist =
 	}
 }]; // end cardlist
 
-g = new Game();
-console.log(g);
+//////////////////////////////
+
+sf.game = new Game();
 
 // createCard = function(){
 // 	// definitions
@@ -233,7 +306,6 @@ console.log(g);
 	box-sizing: border-box;
 }
 body {
-	float: left;
 }
 .card {
 	border: 1px solid black;
@@ -273,6 +345,11 @@ body {
 .high-row, .middle-row, .low-row {
 	height:33%;
 	width:100%;
+}
+
+.player {
+	float: left;
+	width: 50%;
 }
 </style>
 </body>
