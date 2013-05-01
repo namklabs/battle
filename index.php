@@ -60,7 +60,7 @@ function Interface () {
 }
 Interface.prototype.render_card = function( obj_card ){
 	var c = obj_card;
-	var cardhtml = '<div class="card"><h3>' + c.title + '</h3>' + c.attacks[0].area + " " + c.attacks[0].strength + " " + c.attacks[0].type + " " + c.attacks[0].damage + " " + '</div>';
+	var cardhtml = '<div class="card"><h3>' + c.title + '</h3><p><strong>' + c.attacks[0].area + " " + c.attacks[0].strength + " " + c.attacks[0].type + " " + c.attacks[0].damage + " " + '</strong></p><p><em>' + c.flavor + '</em></p></div>';
 	return cardhtml;
 }
 
@@ -134,6 +134,7 @@ Player.prototype.print = function( bool_init ){
 var cardlist = 
 [{
 	title: "High Double Kick Trick",
+	flavor: '2 kicks, 1 trick.',
 	attacks: [{
 		area: 'high',
 		strength: 'heavy',
@@ -152,6 +153,7 @@ var cardlist =
 	}
 },{
 	title: "Pickle Spear Punch",
+	flavor: '"Channel the power of the flavor of pickles." - ancient Chinese proverb?',
 	attacks: [{
 		area: 'middle',
 		strength: 'medium',
@@ -165,6 +167,7 @@ var cardlist =
 	}
 },{
 	title: "Duck!",
+	flavor: 'Only the brave can master this waterfowljutsu secret block technique.',
 	attacks: [{
 		area: 'middle',
 		strength: 'medium',
@@ -178,6 +181,7 @@ var cardlist =
 	}
 },{
 	title: "Face Grab",
+	flavor: 'This one is an attention getter.',
 	attacks: [{
 		area: 'high',
 		strength: 'light',
@@ -191,6 +195,7 @@ var cardlist =
 	}
 },{
 	title: "Hadooki Blast",
+	flavor: 'Blue lasers are highly effective in most combat situations.',
 	attacks: [{
 		area: 'middle',
 		strength: 'heavy',
@@ -204,6 +209,7 @@ var cardlist =
 	}
 },{
 	title: "Hadooki Shot",
+	flavor: 'Give them a taste of blueberry laser. They won\'t like it.',
 	attacks: [{
 		area: 'middle',
 		strength: 'light',
@@ -217,6 +223,7 @@ var cardlist =
 	}
 },{
 	title: "Laughing Uppercut",
+	flavor: 'Nothing can be more demeaning than being laughed at while being uppercutted.',
 	attacks: [{
 		area: 'high',
 		strength: 'light',
@@ -230,6 +237,7 @@ var cardlist =
 	}
 },{
 	title: "Runaround",
+	flavor: 'Make your opponent go the distance.',
 	attacks: [{
 		area: 'low',
 		strength: 'light',
@@ -240,6 +248,62 @@ var cardlist =
 		high: 'miss',
 		middle: 'block',
 		low: 'block'
+	}
+},{
+	title: "Skyward Toss",
+	flavor: 'If they don\'t come down then you have mastered this technique.',
+	attacks: [{
+		area: 'low',
+		strength: 'light',
+		type: 'throw',
+		damage: 5
+	}],
+	defenses: {
+		high: 0,
+		middle: 0,
+		low: 0
+	}
+},{
+	title: "Snow Owl Flying Kick",
+	flavor: 'This attack benefits from, but does not require, a snowy owl to jump over.',
+	attacks: [{
+		area: 'high',
+		strength: 'heavy',
+		type: 'kick',
+		damage: 8
+	}],
+	defenses: {
+		high: -1,
+		middle: 'miss',
+		low: 'miss'
+	}
+},{
+	title: "Super Dodge",
+	flavor: 'You know kung fu.',
+	attacks: [{
+		area: 'low',
+		strength: 'heavy',
+		type: 'block',
+		damage: 0
+	}],
+	defenses: {
+		high: 'miss',
+		middle:'miss',
+		low: 'block'
+	}
+},{
+	title: "Boring Kick",
+	flavor: 'An extremely standard kick meant to bore the opponent to fatigue.',
+	attacks: [{
+		area: 'middle',
+		strength: 'light',
+		type: 'kick',
+		damage: 2
+	}],
+	defenses: {
+		high: 0,
+		middle: -2,
+		low: 0
 	}
 }]; // end cardlist
 
