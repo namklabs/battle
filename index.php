@@ -154,6 +154,7 @@ Interface.prototype.countdown_step = function(round, output){
 	this.step = setTimeout( function(){ game.ux.countdown(round); } , game.roundUpdateInterval );
 }
 Interface.prototype.render_card = function( obj_card ){
+	//TODO: the for-in construct may not be well suited to the data being used. Defense and attacks will always have 3 units each: high, middle, low. It may pay to be more verbose in how the HTML is generated and forego the loops altogether.
 	var card = obj_card;
 	var cardhtml = '<div class="card">';
 	cardhtml      += '<h3>' + card.title + '</h3>';
@@ -301,6 +302,39 @@ Player.prototype.print = function( bool_init ){
 }
 
 //////////////////////////////
+
+/*
+
+New card object layout for better attacks:
+
+{
+	title: "High Double Kick Trick",
+	flavor: '2 kicks, 1 trick.',
+	attacks: {
+		high: {
+			strength: 'heavy',
+			type: 'kick',
+			damage: 4
+		},
+		middle: {
+			strength: 'light',
+			type: 'kick',
+			damage: 2
+		}
+		low: {
+			strength: 'heavy',
+			type: 'kick',
+			damage: 4
+		},
+	},
+	defenses: {
+		high: 'block',
+		middle: -2,
+		low: 0
+	}
+}
+
+*/
 
 var cardlist = 
 [{
