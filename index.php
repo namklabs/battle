@@ -169,7 +169,10 @@ Interface.prototype.render_card = function( obj_card ){
 	cardhtml      += '</div>';
 	cardhtml      += '<p class="flavortext"><em>' + card.flavor + '</em></p>';
 	cardhtml    += '</div>';
-	return cardhtml;
+	var $tempbody = $(document.createElement("body")).html( cardhtml );//create fake body element and write the rendered card to it.
+	var $card = $tempbody.children(".card");//create a jQuery element for just the rendered card
+	card.$ = $card.detach();//detach the element via the jQuery selector created on the previous line and set to the respective card object so they are united
+	return card.$;
 }
 
 //////////////////////////////
@@ -208,11 +211,15 @@ Game.prototype.input_processor_user_select_card = function( keys ){
 		var p1card = game.player1.hand[ game.ux.keys.p1[ keys[i] ] ];
 		if( typeof(p1card)!=='undefined' ){
 			game.getLastRound().player1card = p1card;
+			$("#player1 .card").css("border-color","#555555");
+			p1card.$.css("border-color","pink");
 			console.log( p1card );
 		}
 		var p2card = game.player2.hand[ game.ux.keys.p2[ keys[i] ] ];
 		if( typeof(p2card)!=='undefined' ){
 			game.getLastRound().player2card = p2card;
+			$("#player2 .card").css("border-color","#555555");
+			p2card.$.css("border-color","pink");
 			console.log( p2card );
 		}
 	}
@@ -271,12 +278,11 @@ Player.prototype.print = function( bool_init ){
 	if( bool_init ) $("body").append('<div id="player' + this.uid + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
 	var handhtml = '';
 	for( i in this.hand ){
-		handhtml += this.game_reference.ux.render_card( this.hand[i] ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because game isn't ready until everything runs once, so inside of the constructors game returns undefined.
+		$("#player" + this.uid ).find('.hand').append( this.game_reference.ux.render_card( this.hand[i] ) ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because game isn't ready until everything runs once, so inside of the constructors game returns undefined.
 	}
 	$("#player" + this.uid )
 		.find('.name').text( this.nickname ).end()
-		.find('.hp').text( "HP: " + this.hp ).end()
-		.find('.hand').html( handhtml );
+		.find('.hp').text( "HP: " + this.hp );
 	$(function(){
 		$(".card").width( Math.floor( ( $(".hand").width() - ( $(".card").outerWidth(true) - $(".card").width() ) * 3 ) / 3 ) );
 		$(".card").height( $(".card").width() * (4/3) );
