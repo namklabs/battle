@@ -275,7 +275,14 @@ function Player( gameref, starting_hp, id ) {
 	this.print( true );
 }
 Player.prototype.print = function( bool_init ){
-	if( bool_init ) $("body").append('<div id="player' + this.uid + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
+	//if bool_init is false, the player is redrawn without recreating the container.
+	if( bool_init ){
+		//create and draw for the first time
+		$("body").append('<div id="player' + this.uid + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
+	} else {
+		//redraw
+		$("#player" + this.uid + " .hand .card").remove();
+	}
 	for( i in this.hand ){
 		$("#player" + this.uid ).find('.hand').append( this.game_reference.ux.render_card( this.hand[i] ) ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because game isn't ready until everything runs once, so inside of the constructors game returns undefined.
 	}
