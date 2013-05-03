@@ -194,8 +194,12 @@ Game.prototype.getLastRound = function(){
 	return this.rounds[ this.rounds.length - 1 ];
 }
 Game.prototype.startRound = function(){
-	var r = new Round();
-	this.rounds.push( r );
+	if( typeof(this.getLastRound())=='undefined' || this.getLastRound().progress >= this.roundTimeLimit ){
+		var r = new Round();
+		this.rounds.push( r );
+	} else {
+		console.log('Round in progress. Canceling...');
+	}
 }
 Game.prototype.input_processor_user_select_card = function( keys ){
 	// process card selection for each user
