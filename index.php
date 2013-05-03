@@ -9,7 +9,7 @@ session_start();
 <head><title>Battle</title></head>
 <body>
 
-<h1>Battle!</h1>
+<h1 class="temp_start_round">Battle!</h1>
 
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script src="keyboard.js"></script>
@@ -51,8 +51,6 @@ When a player plays a card, the card may put their character into a certain posi
 
 */
 
-sf = {}; // "Stick Fight!"
-
 //CLASS DEFINITIONS
 //////////////////////////////
 /*
@@ -75,7 +73,56 @@ Card Structure
 
 */
 function Interface () {
-	
+	this.keys = {
+		p1 : {
+			q : 0,
+			w : 1,
+			e : 2,
+			a : 3,
+			s : 4,
+			d : 5
+		},
+		p2 : {
+			i : 0,
+			o : 1,
+			p : 2,
+			j : 3,
+			k : 4,
+			l : 5
+		}
+	}
+}
+Interface.prototype.listen_keyboard = function(bool, input_processor){
+	//str_route is a string of a name of a function within Game that will process the incoming input.
+	if(bool){
+		$(document).on('keydown',function(){ game.ux.grab_input( input_processor ) });
+	} else {
+		$(document).off('keydown');
+	}
+}
+Interface.prototype.grab_input = function(input_processor){
+	// receives all input from keyboard when a key is pressed IFF game.ux.listen_keyboard(true) and passes it to the route it was given from game.ux.listen_keyboard
+	var keys = KeyboardJS.activeKeys();
+	input_processor( keys );
+}
+Interface.prototype.countdown = function(round){
+	if( $(".countdown").length == 0 ){
+		$("body").prepend('<div class="countdown"><div class="message"></div></div>');
+		this.el = $(".countdown .message");
+	}
+	if( round.progress < game.roundTimeLimit ){
+		game.ux.countdown_step(round, this.el);
+	} else {
+		//input time limit is over!
+		this.el.text('Time\'s up!').fadeOut( 3000, function(){ $(".countdown").remove(); });
+		game.ux.listen_keyboard( false );
+		game.evalCardPicks();
+	}
+}
+Interface.prototype.countdown_step = function(round, output){
+	round.progress += game.roundUpdateInterval;
+	output.text( round.progress );
+	this.step = setTimeout( function(){ game.ux.countdown(round); } , game.roundUpdateInterval );
 }
 Interface.prototype.render_card = function( obj_card ){
 	var card = obj_card;
@@ -104,12 +151,43 @@ function Game ( starting_hp, deck_size ) {
 	this.player1 = new Player( this, starting_hp, 1 );
 	this.player2 = new Player( this, starting_hp, 2 );
 	this.round = 0;
-}
-Game.prototype.getRound = function(){
-	return this.round;
+	this.roundTimeLimit = 8000;//8 seconds
+	this.roundUpdateInterval = 100;//1000 milliseconds
+	this.rounds = [];
 }
 Game.prototype.drawCard = function(){
 	return this.deck.cards.shift() ; // TODO: should probably make a function to handle this so when the deck runs out the game will get something other than undefined.
+}
+Game.prototype.getLastRound = function(){
+	return this.rounds[ this.rounds.length - 1 ];
+}
+Game.prototype.startRound = function(){
+	var r = new Round();
+	this.rounds.push( r );
+}
+Game.prototype.input_processor_user_select_card = function( keys ){
+	// process card selection for each user
+	for(var i in keys){
+		var p1card = game.player1.hand[ game.ux.keys.p1[ keys[i] ] ];
+		if( typeof(p1card)!=='undefined' ){
+			game.getLastRound().player1card = p1card;
+			console.log( p1card );
+		}
+		var p2card = game.player2.hand[ game.ux.keys.p2[ keys[i] ] ];
+		if( typeof(p2card)!=='undefined' ){
+			game.getLastRound().player2card = p2card;
+			console.log( p2card );
+		}
+	}
+}
+Game.prototype.evalCardPicks = function(){
+	//evaluate the cards that the players have picked
+}
+
+function Round () {
+	game.ux.listen_keyboard( true, game.input_processor_user_select_card );
+	this.progress = 0;//0 of game.roundTimeLimit (8000)
+	game.ux.countdown(this);
 }
 
 //////////////////////////////
@@ -154,7 +232,7 @@ Player.prototype.print = function( bool_init ){
 	if( bool_init ) $("body").append('<div id="player' + this.uid + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
 	var handhtml = '';
 	for( i in this.hand ){
-		handhtml += this.game_reference.ux.render_card( this.hand[i] ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because sf.game isn't ready until everything runs once, so inside of the constructors sf.game returns undefined.
+		handhtml += this.game_reference.ux.render_card( this.hand[i] ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because game isn't ready until everything runs once, so inside of the constructors game returns undefined.
 	}
 	$("#player" + this.uid )
 		.find('.name').text( this.nickname ).end()
@@ -351,7 +429,11 @@ var cardlist =
 
 //////////////////////////////
 
-sf.game = new Game();
+game = new Game();
+
+$(function(){
+	$('h1.temp_start_round').click( function(){ game.startRound(); });
+});
 
 // createCard = function(){
 // 	// definitions
