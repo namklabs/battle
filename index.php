@@ -87,9 +87,9 @@ Interface.prototype.set_keyboard = function(){
 				i : 0,
 				o : 1,
 				p : 2,
-				j : 3,
-				k : 4,
-				l : 5
+				k : 3,
+				l : 4,
+				";" : 5
 			}
 		}
 	} else if( game.settings.keyboard == 'dvorak' ){
@@ -106,9 +106,9 @@ Interface.prototype.set_keyboard = function(){
 				c : 0,
 				r : 1,
 				l : 2,
-				h : 3,
-				t : 4,
-				n : 5
+				t : 3,
+				n : 4,
+				s : 5
 			}
 		}
 	}
@@ -248,11 +248,11 @@ function Deck ( int_cards ) {
 }
 Deck.prototype.createCard = function( name ){
 	if( !name ){
-		return cardlist[ Math.floor( Math.random() * cardlist.length ) ]; //return random object of card
+		return $.extend(true,{},cardlist[ Math.floor( Math.random() * cardlist.length ) ]); //return random object of card
 	} else {
 		for(i in cardlist){
 			if( cardlist[i].title == name ){
-				return cardlist[i]; //return object of card
+				return $.extend(true,{},cardlist[i]); //return object of card
 			}
 		}
 		alert('Card does not exist!');
@@ -276,7 +276,6 @@ function Player( gameref, starting_hp, id ) {
 }
 Player.prototype.print = function( bool_init ){
 	if( bool_init ) $("body").append('<div id="player' + this.uid + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
-	var handhtml = '';
 	for( i in this.hand ){
 		$("#player" + this.uid ).find('.hand').append( this.game_reference.ux.render_card( this.hand[i] ) ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because game isn't ready until everything runs once, so inside of the constructors game returns undefined.
 	}
