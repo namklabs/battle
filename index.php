@@ -12,6 +12,7 @@ session_start();
 <h1>Battle!</h1>
 
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="keyboard.js"></script>
 <script>
 
 $b = $("body");
@@ -54,13 +55,44 @@ sf = {}; // "Stick Fight!"
 
 //CLASS DEFINITIONS
 //////////////////////////////
+/*
 
+Card Structure
+<div class="card">
+	<h3>Card Title</h3>
+	<div class="defenses">
+		<div class="high defense"></div>
+		<div class="middle defense"></div>
+		<div class="low defense"></div>
+	</div>
+	<div class="attacks">
+		<div class="high attack"></div>
+		<div class="middle attack"></div>
+		<div class="low attack"></div>
+	</div>
+	<p class="flavortext">Flavor Text</p>
+</div>
+
+*/
 function Interface () {
 	
 }
 Interface.prototype.render_card = function( obj_card ){
-	var c = obj_card;
-	var cardhtml = '<div class="card"><h3>' + c.title + '</h3><p><strong>' + c.attacks[0].area + " " + c.attacks[0].strength + " " + c.attacks[0].type + " " + c.attacks[0].damage + " " + '</strong></p><p><em>' + c.flavor + '</em></p></div>';
+	var card = obj_card;
+	var cardhtml = '<div class="card">';
+	cardhtml      += '<h3>' + card.title + '</h3>';
+	cardhtml      += '<div class="defenses">';
+	for(var i in card.defenses){
+		cardhtml      += '<div class="' + i + ' defense">' + card.defenses[i] + '</div>'
+	}
+	cardhtml      += '</div>';
+	cardhtml      += '<div class="attacks">';
+	for(var i in card.attacks){
+		cardhtml      += '<div class="' + card.attacks[i].area + ' attack">' + card.attacks[i].strength + " " + card.attacks[i].type + " " + card.attacks[i].damage + " " + '</div>';
+	}
+	cardhtml      += '</div>';
+	cardhtml      += '<p class="flavortext"><em>' + card.flavor + '</em></p>';
+	cardhtml    += '</div>';
 	return cardhtml;
 }
 
@@ -71,10 +103,10 @@ function Game ( starting_hp, deck_size ) {
 	this.deck = new Deck( deck_size );
 	this.player1 = new Player( this, starting_hp, 1 );
 	this.player2 = new Player( this, starting_hp, 2 );
-	this.roundnumber = 0;
+	this.round = 0;
 }
-Game.prototype.round = function(){
-	//start the next round of combat
+Game.prototype.getRound = function(){
+	return this.round;
 }
 Game.prototype.drawCard = function(){
 	return this.deck.cards.shift() ; // TODO: should probably make a function to handle this so when the deck runs out the game will get something other than undefined.
@@ -83,13 +115,14 @@ Game.prototype.drawCard = function(){
 //////////////////////////////
 
 function Deck ( int_cards ) {
-	int_cards = typeof(int_cards)==='undefined' ? 60 : int_cards;
+	var default_deck_size = 60;//cards
+	int_cards = typeof(int_cards)==='undefined' ? default_deck_size : int_cards;
 	this.cards = [];
 	for(var i = 0; i < int_cards; i++){
-		this.cards.push( this.getCard() );
+		this.cards.push( this.createCard() );
 	}
 }
-Deck.prototype.getCard = function( name ){
+Deck.prototype.createCard = function( name ){
 	if( !name ){
 		return cardlist[ Math.floor( Math.random() * cardlist.length ) ]; //return random object of card
 	} else {
@@ -107,10 +140,10 @@ Deck.prototype.getCard = function( name ){
 
 function Player( gameref, starting_hp, id ) {
 	this.hp = typeof(starting_hp)==='undefined' ? 30 : starting_hp;
-	this.id = id;
-	this.name = "Player " + this.id; //prompt("Please enter Player " + this.id + "'s name:"); //TODO: uncomment this for production so users can name their players
+	this.uid = id;
+	this.nickname = "Player " + this.uid; //prompt("Please enter Player " + this.uid + "'s name:"); //TODO: uncomment this for production so users can name their players
 	this.hand = [];
-	this.parent = gameref;
+	this.game_reference = gameref;
 
 	for(var i = 0; i < 6; i++ ){
 		this.hand.push( gameref.drawCard() );
@@ -118,15 +151,24 @@ function Player( gameref, starting_hp, id ) {
 	this.print( true );
 }
 Player.prototype.print = function( bool_init ){
-	if( bool_init ) $("body").append('<div id="player' + this.id + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
+	if( bool_init ) $("body").append('<div id="player' + this.uid + '" class="player"><h1 class="name"></h1><h2 class="hp"></h2><div class="hand"></div></div>');
 	var handhtml = '';
 	for( i in this.hand ){
-		handhtml += this.parent.ux.render_card( this.hand[i] ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because sf.game isn't ready until everything runs once, so inside of the constructors sf.game returns undefined.
+		handhtml += this.game_reference.ux.render_card( this.hand[i] ); // TODO: I don't like having to pass in gameref to reference the parent object but I'm not sure if there is a way around it. This was done because sf.game isn't ready until everything runs once, so inside of the constructors sf.game returns undefined.
 	}
-	$("#player" + this.id )
-		.find('.name').text( this.name ).end()
+	$("#player" + this.uid )
+		.find('.name').text( this.nickname ).end()
 		.find('.hp').text( "HP: " + this.hp ).end()
 		.find('.hand').html( handhtml );
+	$(function(){
+		$(".card").width( Math.floor( ( $(".hand").width() - ( $(".card").outerWidth(true) - $(".card").width() ) * 3 ) / 3 ) );
+		$(".card").height( $(".card").width() * (4/3) );
+		$.each( $(".player .hand"), function() {
+			$.each( $(".card"), function(){
+
+			});
+		});
+	});
 }
 
 //////////////////////////////
@@ -370,45 +412,44 @@ sf.game = new Game();
 	box-sizing: border-box;
 }
 body {
+	font-family:'Helvetica Neue','Helvetica',sans-serif;
+	font-size: 16px;
 }
 .card {
-	border: 1px solid black;
-	border-radius: 5px;
+	background-color: #eeeeee;
+	border: 6px solid #555555;
+	border-radius: 8px;
 	float: left;
-	font-size: 12px;
-	height: 200px;
-	margin: 1em;
+	font-size: 1em;
+	height: auto;
+	margin: 0.5em;
 	overflow: hidden;
-	padding: 0.25em;
-	width: 150px;
+	padding: 0.5em;
+	width: 29%;
+}
+.card h3 {
+	margin-top: 0;
 }
 .card > div {
 	height: 33%;
 	/*line-height: 4.5;*/
 }
-.card div.value {
-	/*float: left;*/
+.card .defenses, .card .attacks {
+	float: left;
+}
+.card .defenses {
 	text-align: right;
-	/*width: 50%;*/
+	width: 25%;
 }
-.card div.defend {
-	display:none;
+.card .attacks {
+	width:75%;
 }
-.card div.value span {
-	background-color: #cccccc;
-	border: 1px solid #999999;
-	border-radius: 5px;
-	display: inline-block;
-	/*padding: 0.25em;*/
-	padding: 0 3px;
-	/*white-space: nowrap;*/
+.attack {
+	text-align: right;
 }
-.card .areas {
-	height: 76%;
-}
-.high-row, .middle-row, .low-row {
-	height:33%;
-	width:100%;
+.flavortext {
+	font-family: 'Georgia',serif;
+	font-size: 0.75em;
 }
 
 .player {
