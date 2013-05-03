@@ -40,11 +40,6 @@ Card 6 - L
 
 Both players have a set amount of time to select their card with their keys. They can change their selection until the timer ends. The time is very short, like 8 seconds. This makes the players have to think fast and react quickly to new card options.
 
-
-
-
-
-
 TODO: IDEA
 
 When a player plays a card, the card may put their character into a certain position such as crouching or standing or jumping. Perhaps these stances last 1 turn each and may inhibit the types of cards you can play immediately after the card you just played. Riffing off previous card choices will make this game much more exciting.
@@ -73,24 +68,58 @@ Card Structure
 
 */
 function Interface () {
-	this.keys = {
-		p1 : {
-			q : 0,
-			w : 1,
-			e : 2,
-			a : 3,
-			s : 4,
-			d : 5
-		},
-		p2 : {
-			i : 0,
-			o : 1,
-			p : 2,
-			j : 3,
-			k : 4,
-			l : 5
+	$(function(){
+		game.ux.set_keyboard();
+	});
+}
+Interface.prototype.set_keyboard = function(){
+	if( game.settings.keyboard == 'qwerty' ){
+		this.keys = {
+			p1 : {
+				q : 0,
+				w : 1,
+				e : 2,
+				a : 3,
+				s : 4,
+				d : 5
+			},
+			p2 : {
+				i : 0,
+				o : 1,
+				p : 2,
+				j : 3,
+				k : 4,
+				l : 5
+			}
+		}
+	} else if( game.settings.keyboard == 'dvorak' ){
+		this.keys = {
+			p1 : {
+				"'" : 0,
+				"," : 1,
+				"." : 2,
+				a : 3,
+				o : 4,
+				e : 5
+			},
+			p2 : {
+				c : 0,
+				r : 1,
+				l : 2,
+				h : 3,
+				t : 4,
+				n : 5
+			}
 		}
 	}
+}
+Interface.prototype.dvorak = function(bool){
+	if(bool){
+		game.settings.keyboard = 'dvorak';
+	} else {
+		game.settings.keyboard = 'qwerty';
+	}
+	this.set_keyboard();
 }
 Interface.prototype.listen_keyboard = function(bool, input_processor){
 	//str_route is a string of a name of a function within Game that will process the incoming input.
@@ -146,7 +175,10 @@ Interface.prototype.render_card = function( obj_card ){
 //////////////////////////////
 
 function Game ( starting_hp, deck_size ) {
-	this.ux = new Interface();
+	this.settings = {
+		keyboard : 'qwerty'
+	};
+	this.ux = new Interface( this.settings );
 	this.deck = new Deck( deck_size );
 	this.player1 = new Player( this, starting_hp, 1 );
 	this.player2 = new Player( this, starting_hp, 2 );
@@ -168,6 +200,7 @@ Game.prototype.startRound = function(){
 Game.prototype.input_processor_user_select_card = function( keys ){
 	// process card selection for each user
 	for(var i in keys){
+		console.log( keys[i] );
 		var p1card = game.player1.hand[ game.ux.keys.p1[ keys[i] ] ];
 		if( typeof(p1card)!=='undefined' ){
 			game.getLastRound().player1card = p1card;
@@ -183,6 +216,8 @@ Game.prototype.input_processor_user_select_card = function( keys ){
 Game.prototype.evalCardPicks = function(){
 	//evaluate the cards that the players have picked
 }
+
+//////////////////////////////
 
 function Round () {
 	game.ux.listen_keyboard( true, game.input_processor_user_select_card );
@@ -432,7 +467,10 @@ var cardlist =
 game = new Game();
 
 $(function(){
-	$('h1.temp_start_round').click( function(){ game.startRound(); });
+	//temporary stuff!!!!
+		$('h1.temp_start_round').click( function(){ game.startRound(); });
+		game.ux.dvorak(true);
+	//end temporary stuff!!!!
 });
 
 // createCard = function(){
